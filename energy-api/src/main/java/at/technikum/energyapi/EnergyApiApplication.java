@@ -8,7 +8,7 @@ public class EnergyApiApplication {
 
 	public static void main(String[] args) {
 
-		SpringApplication.run(EnergyApiApplication.class, args);
+		SpringApplication.run(EnergyApiApplication.class, args); //
 
 	}
 

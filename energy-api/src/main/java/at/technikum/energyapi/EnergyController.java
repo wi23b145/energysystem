@@ -10,7 +10,7 @@ import java.util.Arrays;
 @RequestMapping("/api/energy")
 public class EnergyController {
 
-    // Gibt aktuelle (simulierte) Daten für eine Energiegemeinschaft zurück
+    // Gibt aktuelle (simulierte) Daten für eine Energiegemeinschaft zurück.
     @GetMapping("/current")
     public EnergyUsage getCurrentEnergyUsage() {
         return new EnergyUsage(
@@ -30,4 +30,6 @@ public class EnergyController {
                 new EnergyUsage("Energiegemeinschaft Linz", 135.4, 120.3, "2025-04-22T10:00:00")
         );
     }
+
+
 }
