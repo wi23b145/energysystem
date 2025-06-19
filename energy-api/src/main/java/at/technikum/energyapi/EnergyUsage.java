@@ -1,23 +1,28 @@
 package at.technikum.energyapi;
 
-public class EnergyUsage {
-    private String communityName;
-    private double production;     // in kWh
-    private double consumption;    // in kWh
-    private String timestamp;      // ISO 8601 Zeitformat
+import jakarta.persistence.*;
 
-    // Konstruktor
+@Entity
+@Table(name = "energy_usage")
+public class EnergyUsage {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String communityName;
+    private double production;
+    private double consumption;
+    private String timestamp;
+
+    public EnergyUsage() {}
+
     public EnergyUsage(String communityName, double production, double consumption, String timestamp) {
         this.communityName = communityName;
         this.production = production;
         this.consumption = consumption;
         this.timestamp = timestamp;
     }
-
-    // Standard-Konstruktor (wird z.B. für JSON-Deserialisierung benötigt)
-    public EnergyUsage() {
-    }
-
     // Getter und Setter
     public String getCommunityName() {
         return communityName;
