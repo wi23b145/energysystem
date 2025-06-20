@@ -1,7 +1,7 @@
 package at.technikum.energyapi;
 
 import jakarta.persistence.*;
-
+//...
 @Entity
 @Table(name = "energy_usage")
 public class EnergyUsage {
