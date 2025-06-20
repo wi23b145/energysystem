@@ -2,7 +2,7 @@ package at.technikum.energyapi.controller;
 
 
 import at.technikum.energyapi.EnergyUsage;
-import at.technikum.energyapi.EnergyUsageRepository;
+import at.technikum.energyapi.repository.EnergyUsageRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
