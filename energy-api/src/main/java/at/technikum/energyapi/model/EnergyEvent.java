@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class EnergyEvent implements Serializable {
     private String source;
     private int amount;
-
     public EnergyEvent() {}
     public EnergyEvent(String source, int amount) {
         this.source = source;
