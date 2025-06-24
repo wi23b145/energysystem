@@ -1,28 +1,31 @@
 package at.technikum.energyapi.service;
 
-import at.technikum.energyapi.config.RabbitMQConfig;
-import at.technikum.energyapi.model.UsageRecord;
-import at.technikum.energyapi.model.PercentageRecord;
-import at.technikum.energyapi.repository.PercentageRepository;
+import org.json.JSONObject;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PercentageListener {
 
-    private final PercentageRepository percentRepo;
+    @RabbitListener(queues = "percent.queue")
+    public void handleMessage(String message) {
+        try {
+            JSONObject json = new JSONObject(message);
 
-    public PercentageListener(PercentageRepository percentRepo) {
-        this.percentRepo = percentRepo;
-    }
+            double production = json.getDouble("production");
+            double consumption = json.getDouble("consumption");
+            String timestamp = json.getString("timestamp");
 
-    @RabbitListener(queues = RabbitMQConfig.PERCENT_QUEUE)
-    public void calculatePercentage(UsageRecord rec) {
-        // Beispiel: Gesamtproduktion und -verbrauch aus DB holen, hier vereinfacht:
-        double produced = percentRepo.sumByType("produced");
-        double used     = percentRepo.sumByType("used");
-        double percent  = (used / produced) * 100.0;
-        PercentageRecord pr = new PercentageRecord(percent);
-        percentRepo.save(pr);
+            double gridUsed = Math.max(consumption - production, 0);
+            double percent = consumption > 0 ? (gridUsed / consumption) * 100 : 0;
+
+            System.out.printf(
+                    "Netzabhängigkeit für %s: %.2f kWh (%.2f%%)%n",
+                    timestamp, gridUsed, percent
+            );
+
+        } catch (Exception e) {
+            System.err.println("Fehler beim Verarbeiten der Prozent-Nachricht: " + e.getMessage());
+        }
     }
 }
