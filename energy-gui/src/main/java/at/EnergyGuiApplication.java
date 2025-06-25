@@ -14,69 +14,82 @@ import java.net.URL;
 
 public class EnergyGuiApplication extends Application {
 
+    // TextArea zum Anzeigen der API-Antwort
     private TextArea responseArea = new TextArea();
 
     @Override
     public void start(Stage primaryStage) {
+        // Fenster-Titel setzen
         primaryStage.setTitle("Energy GUI - Community vs. Grid");
 
-        // Current Data Button
+        // Button zum Abrufen der aktuellen Daten
         Button getCurrentBtn = new Button("Get Current Data");
         getCurrentBtn.setOnAction(e -> {
+            // API-Aufruf für aktuelle Daten und Anzeige der Antwort in der TextArea
             String response = getApiResponse("http://localhost:8080/energy/current");
-            responseArea.setText(response);
+            responseArea.setText(response);  // Antwort in der TextArea anzeigen
         });
 
-        // Historical Data Controls
-        Label startLabel = new Label("Start:");
-        TextField startField = new TextField("2025-01-10T14:00");
+        // Steuerung für historische Daten
+        Label startLabel = new Label("Start:");  // Label für den Startzeitpunkt
+        TextField startField = new TextField("2025-01-10T14:00");  // Textfeld für Startzeit
 
-        Label endLabel = new Label("End:");
-        TextField endField = new TextField("2025-01-10T15:00");
+        Label endLabel = new Label("End:");  // Label für den Endzeitpunkt
+        TextField endField = new TextField("2025-01-10T15:00");  // Textfeld für Endzeit
 
+        // Button zum Abrufen der historischen Daten
         Button getHistoricalBtn = new Button("Get Historical Data");
         getHistoricalBtn.setOnAction(e -> {
+            // Start- und Endzeit aus den Textfeldern lesen
             String start = startField.getText();
             String end = endField.getText();
+            // URL mit den Parametern für Start- und Endzeit erstellen
             String url = String.format("http://localhost:8080/energy/historical?start=%s&end=%s", start, end);
+            // API-Aufruf für historische Daten und Anzeige der Antwort in der TextArea
             String response = getApiResponse(url);
-            responseArea.setText(response);
+            responseArea.setText(response);  // Antwort in der TextArea anzeigen
         });
 
-        // Layout
-        HBox currentBox = new HBox(10, getCurrentBtn);
-        HBox timeBox = new HBox(10, startLabel, startField, endLabel, endField, getHistoricalBtn);
-        VBox layout = new VBox(10, currentBox, timeBox, responseArea);
-        layout.setPadding(new Insets(15));
+        // Layout-Container für die Schaltflächen und Textfelder
+        HBox currentBox = new HBox(10, getCurrentBtn);  // Box für den Button zum Abrufen der aktuellen Daten
+        HBox timeBox = new HBox(10, startLabel, startField, endLabel, endField, getHistoricalBtn);  // Box für Start- und Endzeit sowie Button für historische Daten
+        VBox layout = new VBox(10, currentBox, timeBox, responseArea);  // Vertikales Layout für die gesamte GUI
+        layout.setPadding(new Insets(15));  // Innenabstände im Layout setzen
 
-        responseArea.setEditable(false);
-        responseArea.setWrapText(true);
+        // TextArea für die Anzeige der API-Antwort konfigurieren
+        responseArea.setEditable(false);  // TextArea nicht bearbeitbar machen
+        responseArea.setWrapText(true);  // Zeilenumbruch in der TextArea aktivieren
 
-        Scene scene = new Scene(layout, 800, 400);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        // Szene erstellen und auf der Stage anzeigen
+        Scene scene = new Scene(layout, 800, 400);  // Szene mit Layout und Fenstergröße erstellen
+        primaryStage.setScene(scene);  // Szene auf der Stage setzen
+        primaryStage.show();  // Fenster anzeigen
     }
 
+    // Methode zum Abrufen der API-Antwort
     private String getApiResponse(String urlString) {
-        StringBuilder response = new StringBuilder();
+        StringBuilder response = new StringBuilder();  // StringBuilder für die Antwort
         try {
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+            URL url = new URL(urlString);  // URL aus dem übergebenen String erstellen
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();  // Verbindung zur URL herstellen
+            conn.setRequestMethod("GET");  // HTTP-GET-Methode festlegen
 
+            // Eingabestrom für die API-Antwort öffnen
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
-            while ((line = in.readLine()) != null) {
-                response.append(line).append("\n");
+            while ((line = in.readLine()) != null) {  // Zeilenweise Antwort lesen
+                response.append(line).append("\n");  // Zeilen zur Antwort hinzufügen
             }
-            in.close();
+            in.close();  // Eingabestrom schließen
         } catch (Exception e) {
-            response.append("Error: ").append(e.getMessage());
+            // Fehlerbehandlung, falls ein Problem auftritt
+            response.append("Error: ").append(e.getMessage());  // Fehlermeldung in der Antwort anzeigen
         }
-        return response.toString();
+        return response.toString();  // Antwort als String zurückgeben
     }
 
+    // Main-Methode zum Starten der Anwendung
     public static void main(String[] args) {
-        launch(args);
+        launch(args);  // JavaFX-Anwendung starten
     }
 }
