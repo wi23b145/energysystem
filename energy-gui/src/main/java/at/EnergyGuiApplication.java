@@ -93,3 +93,5 @@ public class EnergyGuiApplication extends Application {
         launch(args);  // JavaFX-Anwendung starten
     }
 }
+
+//
