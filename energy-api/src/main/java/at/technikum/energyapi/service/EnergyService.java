@@ -26,3 +26,5 @@ public class EnergyService {
         return repository.save(record);
     }
 }
+
+//
