@@ -27,22 +27,23 @@ public class ProducerService {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     // Konstruktor: Abhängigkeitsinjektion des RabbitTemplate
+    // Hier wird das RabbitTemplate für spätere Nachrichtenversendung gespeichert
     public ProducerService(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;  // Speichern des RabbitTemplate für spätere Nachrichtenversendung
+        this.rabbitTemplate = rabbitTemplate;
     }
 
-    // Diese Methode wird sofort nach der Initialisierung des Beans aufgerufen
-    // (durch @PostConstruct) und startet den Produktionszyklus
+    // Diese Methode wird nach der Initialisierung des Beans durch @PostConstruct aufgerufen
+    // Sie startet den Produktionszyklus, indem sie den ersten Produktionszyklus startet
     @PostConstruct
     public void startProducing() {
         // Der erste Produktionszyklus wird gestartet
         scheduleNextMessage();
     }
 
-    // Diese Methode plant die nächste Nachrichtensendung
+    // Diese Methode plant die nächste Nachrichtensendung mit einer zufälligen Verzögerung
     private void scheduleNextMessage() {
-        // Zufällige Verzögerung zwischen 1 und 5 Sekunden
-        int delaySeconds = 1 + random.nextInt(5);
+        // Eine zufällige Verzögerung zwischen 1 und 5 Sekunden
+        int delaySeconds = 1 + random.nextInt(5);  // Zufallszahl zwischen 1 und 5
         // Der Scheduler wird verwendet, um die nächste Nachricht nach der zufälligen Verzögerung zu senden
         scheduler.schedule(this::sendMessage, delaySeconds, TimeUnit.SECONDS);
     }
@@ -151,3 +152,4 @@ public class ProducerService {
         System.out.println("Sent test USER message: " + json);
     }
 }
+

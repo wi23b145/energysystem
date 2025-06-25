@@ -20,13 +20,15 @@ import static at.technikum.energyapi.config.RabbitMQConfig.EXCHANGE;
 @Service
 public class UsageListener {
 
-    // Diese Variablen speichern die Repositorys für den Zugriff auf die Datenbank und RabbitTemplate für den Austausch von Nachrichten
+    // Repository für EnergyUsage und EnergyRecord, um auf die Datenbank zuzugreifen
     private final EnergyUsageRepository usageRepo;
     private final EnergyRecordRepository recordRepo;
+
+    // RabbitTemplate für das Senden von Nachrichten an RabbitMQ
     private final RabbitTemplate rabbitTemplate;
 
-    // Konstruktor: Abhängigkeitsinjektion für die Repositorys und RabbitTemplate
-    // Dies stellt sicher, dass beim Erstellen des Service die benötigten Objekte zur Verfügung gestellt werden
+    // Konstruktor mit Abhängigkeitsinjektion für die Repositorys und RabbitTemplate
+    // Diese Methode stellt sicher, dass die benötigten Objekte zur Verfügung gestellt werden, wenn der Service instanziiert wird.
     public UsageListener(EnergyUsageRepository usageRepo,
                          EnergyRecordRepository recordRepo,
                          RabbitTemplate rabbitTemplate) {
@@ -35,32 +37,34 @@ public class UsageListener {
         this.rabbitTemplate = rabbitTemplate;  // Speichert das RabbitTemplate für den Nachrichtenaustausch
     }
 
-    // RabbitListener für die "energy-data-queue"
-    // Diese Methode wird ausgelöst, wenn eine Nachricht von der Queue empfangen wird.
-    // Sie verarbeitet die Nachricht und speichert die relevanten Daten in der Datenbank.
+    // Diese Methode wird durch @RabbitListener ausgelöst, wenn eine Nachricht in der "energy-data-queue" empfangen wird.
+    // Sie verarbeitet die empfangene Nachricht und speichert die relevanten Daten in der Datenbank.
     @RabbitListener(bindings = @org.springframework.amqp.rabbit.annotation.QueueBinding(
             value = @org.springframework.amqp.rabbit.annotation.Queue(value = "energy-data-queue", durable = "true"),
             exchange = @org.springframework.amqp.rabbit.annotation.Exchange(value = "energy.exchange", type = "direct"),
             key = "energy"
     ))
-    @Transactional  // Alle Datenbankoperationen in dieser Methode werden als Transaktion ausgeführt
+    @Transactional  // Alle Datenbankoperationen in dieser Methode werden in einer Transaktion ausgeführt
     public void handleMessage(@Payload String message) {
         try {
-            // Simuliere eine Verzögerung von 10 Sekunden, um die Nachricht bewusst langsamer zu verarbeiten (z. B. als Test)
+            // Simuliere eine Verzögerung von 10 Sekunden, um die Verarbeitung der Nachricht absichtlich zu verlangsamen (z. B. für Tests)
             Thread.sleep(10000);
 
             // Konvertiere die empfangene Nachricht in ein JSON-Objekt
             JSONObject json = new JSONObject(message);
 
-            // Extrahiere relevante Felder aus der Nachricht
-            String type = json.getString("type");  // Bestimmt den Nachrichtentyp (PRODUCER, USER, ENERGY)
-            double kwh = json.getDouble("kwh");  // Die verbrauchten Kilowattstunden (kWh)
+            // Extrahiere relevante Felder aus der Nachricht:
+            // - `type` (Nachrichtentyp, z.B. "PRODUCER", "USER", "ENERGY")
+            // - `kwh` (Die verbrauchten Kilowattstunden)
+            // - `datetime` (Der Zeitstempel der Nachricht)
+            String type = json.getString("type");  // Nachrichtentyp (PRODUCER, USER, ENERGY)
+            double kwh = json.getDouble("kwh");  // Die verbrauchten Kilowattstunden
             LocalDateTime timestamp = LocalDateTime.parse(json.getString("datetime"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);  // Der Zeitstempel der Nachricht
 
             // Berechne die Stunde, um Aggregationen auf Stundenbasis durchzuführen (Setze Minuten, Sekunden und Nanosekunden auf 0)
             LocalDateTime hour = timestamp.withMinute(0).withSecond(0).withNano(0);
 
-            // Versuche, das EnergyRecord für die berechnete Stunde aus der Datenbank zu holen. Wenn es nicht existiert, erstelle es.
+            // Versuche, das EnergyRecord für die berechnete Stunde aus der Datenbank zu holen. Wenn es nicht existiert, wird ein neues erstellt.
             EnergyRecord record = recordRepo.findByTimestamp(hour).orElseGet(() -> {
                 EnergyRecord newRecord = new EnergyRecord();
                 newRecord.setTimestamp(hour);
@@ -69,7 +73,7 @@ public class UsageListener {
                 return newRecord;
             });
 
-            // Verarbeitung je nach Nachrichtentyp
+            // Verarbeite die Nachricht je nach Typ
             if (type.equalsIgnoreCase("PRODUCER")) {
                 // Wenn es sich um einen PRODUCER handelt, wird nur die Produktion berücksichtigt
                 EnergyUsage usage = new EnergyUsage();
@@ -158,7 +162,7 @@ public class UsageListener {
     // PostConstruct: Diese Methode wird nach der Erstellung des Beans aufgerufen und sendet eine Test-Nachricht in den RabbitMQ-Exchange
     @PostConstruct
     public void sendTestUserMessage(){
-        // Erstelle eine Test-Nachricht für einen User
+        // Erstelle eine Testnachricht für einen User
         JSONObject json = new JSONObject();
         json.put("datetime", "2025-06-23T17:00:00");  // Zeitpunkt der Nachricht
         json.put("association", "COMMUNITY");  // Gemeinschaftsname
@@ -169,3 +173,4 @@ public class UsageListener {
         rabbitTemplate.convertAndSend("energy.exchange", "energy", json.toString());
     }
 }
+
