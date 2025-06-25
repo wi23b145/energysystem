@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 // Kennzeichnet die Klasse als Service-Komponente in Spring.
 // Services enthalten die Geschäftslogik und sind Vermittler zwischen Controller und Repository.
 @Service
@@ -59,3 +60,4 @@ public class EnergyUsageService {
         return repository.save(usage);
     }
 }
+//
